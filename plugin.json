@@ -1,0 +1,60 @@
+{
+  "id": "brick-bread.paynow",
+  "name": "PayNow sales",
+  "version": "1.0.0",
+  "author": "Brick_Bread",
+  "description": "Celebrates every sale on your PayNow store with an alert in the pill and a glow animation.",
+  "assembly": "PayNowAlerts.dll",
+  "apiVersion": 7,
+  "repository": "Brick-Bread/wnotch-paynow",
+  "permissions": [ "network" ],
+  "settings": [
+    {
+      "key": "storeId",
+      "label": "Store ID",
+      "type": "text",
+      "hint": "613881873059291136",
+      "description": "In the PayNow dashboard under Settings > General."
+    },
+    {
+      "key": "apiKey",
+      "label": "API key",
+      "type": "secret",
+      "description": "Create one in the PayNow dashboard under Settings > API Keys; it only needs to read orders. Stored encrypted for your Windows account."
+    },
+    {
+      "key": "animation",
+      "label": "Animation",
+      "type": "choice",
+      "options": [ "Confetti", "Gold", "Rainbow", "Fireworks", "Cash", "Off" ],
+      "description": "Played on the glow around the pill for each sale."
+    },
+    {
+      "key": "bigSale",
+      "label": "Big sale from (store currency)",
+      "type": "number",
+      "min": 0,
+      "max": 100000,
+      "description": "Sales of at least this much get a longer, wider animation. 0 treats every sale the same."
+    },
+    {
+      "key": "keepAlert",
+      "label": "Keep a reminder in the pill until I look",
+      "type": "bool",
+      "description": "After the alert, the pill keeps showing how many sales came in until you open the PayNow tab or the Plugins tab."
+    },
+    {
+      "key": "skipFree",
+      "label": "Ignore free orders",
+      "type": "bool",
+      "description": "Orders that total nothing, such as fully discounted ones, are counted but not announced."
+    },
+    {
+      "key": "pollSeconds",
+      "label": "Check every (seconds)",
+      "type": "number",
+      "min": 10,
+      "max": 600
+    }
+  ]
+}

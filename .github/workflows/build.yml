@@ -1,0 +1,63 @@
+name: Build and release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-dotnet@v6.0.0
+        with:
+          dotnet-version: 10.0.x
+      - name: Get the supported Notch API
+        uses: actions/checkout@v7.0.1
+        with:
+          repository: Brick-Bread/WNotch
+          ref: 530b87ed99899e7b1c6f7baf74d80c9b6bf39745
+          path: .notch-reference
+      - name: Build the API reference
+        shell: pwsh
+        run: dotnet build .notch-reference/src/Notch.Core -c Release -o .notch-core --nologo
+      - name: Build and package
+        shell: pwsh
+        run: ./build.ps1 -NotchCorePath "$PWD/.notch-core/Notch.Core.dll"
+      - name: Upload plugin
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: paynow-sales
+          path: dist/*.zip
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: paynow-sales
+          path: release-files
+      - name: Publish release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $manifest = Get-Content plugin.json -Raw | ConvertFrom-Json
+          if ($env:GITHUB_REF_NAME -ne "v$($manifest.version)") {
+            throw 'The tag must match the plugin manifest version.'
+          }
+          $archive = Get-ChildItem release-files/*.zip
+          if ($archive.Count -ne 1) { throw 'Expected exactly one plugin ZIP.' }
+          gh release create $env:GITHUB_REF_NAME $archive.FullName --verify-tag --title "PayNow sales $($manifest.version)" --generate-notes
+          if ($LASTEXITCODE -ne 0) { throw 'Release creation failed.' }

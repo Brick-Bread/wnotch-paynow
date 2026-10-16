@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Builds a self-describing plugin folder: a .deps.json, and the NuGet dependencies next to the dll. -->
+    <EnableDynamicLoading>true</EnableDynamicLoading>
+    <RootNamespace>PayNowAlerts</RootNamespace>
+    <AssemblyName>PayNowAlerts</AssemblyName>
+    <NotchCorePath Condition="'$(NotchCorePath)' == ''">$(LocalAppData)\Programs\Notch\Notch.Core.dll</NotchCorePath>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Notch supplies Notch.Core at run time, so it is never copied next to the plugin. -->
+    <Reference Include="Notch.Core">
+      <HintPath>$(NotchCorePath)</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
+    <Compile Remove=".notch-reference\**\*.cs;.notch-core\**\*.cs;dist\**\*.cs" />
+    <None Update="plugin.json" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+  <Target Name="CheckNotchReference" BeforeTargets="ResolveReferences">
+    <Error Condition="!Exists('$(NotchCorePath)')" Text="Notch.Core.dll was not found. Build with -p:NotchCorePath=C:\path\to\Notch.Core.dll from a WNotch build with plugin API 7 or newer." />
+  </Target>
+</Project>
